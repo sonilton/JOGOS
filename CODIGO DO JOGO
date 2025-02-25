@@ -1,0 +1,114 @@
+import pygame
+import random
+
+# Inicializar o pygame
+pygame.init()
+       
+# Definir as dimensões da tela
+SCREEN_WIDTH = 1800
+SCREEN_HEIGHT = 920
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Jogo do Dinossauro")
+
+# Definir as cores
+WHITE = (255, 255, 255)
+
+# Carregar imagens
+dino_image = pygame.image.load("dino.png")
+cactus_image = pygame.image.load("cactus.png")
+
+# Classe do Dinossauro
+class Dino(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = dino_image
+        self.rect = self.image.get_rect()
+        self.rect.x = 50
+        self.rect.y = SCREEN_HEIGHT - self.rect.height - 50
+        self.is_jumping = False
+        self.jump_speed = 18
+        self.gravity = 0.4 
+
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE] and not self.is_jumping:
+            self.is_jumping = True
+        if self.is_jumping:
+            self.rect.y -= self.jump_speed
+            self.jump_speed -= self.gravity
+            if self.jump_speed < -15:
+                self.is_jumping = False
+                self.jump_speed = 15
+            if self.rect.y >= SCREEN_HEIGHT - self.rect.height - 50:
+                self.rect.y = SCREEN_HEIGHT - self.rect.height - 50
+
+# Classe do Cacto
+class Cactus(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = cactus_image
+        self.rect = self.image.get_rect()
+        self.rect.x = SCREEN_WIDTH
+        self.rect.y = SCREEN_HEIGHT - self.rect.height - 50
+
+    def update(self):
+        self.rect.x -= 15  # Velocidade do cacto
+        if self.rect.x < -self.rect.width:
+            self.rect.x = SCREEN_WIDTH + random.randint(0, 500)
+
+# Função para recortar uma imagem
+            
+# recortar_imagem("dino.png", 0, 0, 88, 94)
+def recortar_imagem(image, x, y, width, height):
+    image = pygame.image.load(image)
+    image_rect = image.get_rect()
+    rect = pygame.Rect(x, y, width, height)
+    image = image.subsurface(rect)
+    return image
+ 
+ # recortar_imagem("dino.png", 0, 0, 88, 94)
+def recortar_imagem(image, x, y, width, height):
+    image = pygame.image.load(image)
+    image_rect = image.get_rect()
+    rect = pygame.Rect(x, y, width, height)
+    image = image.subsurface(rect)
+    return image
+
+#função para as imagens não se encontrarem
+def colisao(objeto1, objeto2):
+    if objeto1.rect.right > objeto2.rect.left and objeto1.rect.left < objeto2.rect.right:
+        if objeto1.rect.bottom > objeto2.rect.top and objeto1.rect.top < objeto2.rect.bottom:
+            return True
+    return False
+
+# Função principal do jogo
+def main():
+    clock = pygame.time.Clock()
+    dino = Dino()
+    cactus = Cactus()
+
+    all_sprites = pygame.sprite.Group()
+    all_sprites.add(dino)
+    all_sprites.add(cactus)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        all_sprites.update()
+
+        if pygame.sprite.collide_rect(dino, cactus):
+            print("Game Over!")
+            running = False
+
+        screen.fill(WHITE)
+        all_sprites.draw(screen)
+        pygame.display.flip()
+        clock.tick(30)
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
